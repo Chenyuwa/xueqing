@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="学情">
+<meta name="theme-color" content="#0f766e">
+<title>学情分析</title>
+<style>
+:root{--bg:#f4f7f5;--card:#fff;--ink:#1c2b29;--mute:#6b7c79;--line:#dbe4e1;--ac:#0f766e;--up:#15803d;--dn:#c2410c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101a19;--card:#182624;--ink:#e6efed;--mute:#8fa5a1;--line:#2a3d3a;--ac:#2dd4bf;--up:#4ade80;--dn:#fb923c}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,"PingFang SC","Noto Sans SC",sans-serif;padding-bottom:72px}
+main{max-width:620px;margin:0 auto;padding:14px}
+h1{font-size:20px;margin:6px 0 12px}h2{font-size:16px;margin:18px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mute{color:var(--mute);font-size:13px}.up{color:var(--up)}.dn{color:var(--dn)}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;border:0;background:none;padding:12px 0;font-size:14px;color:var(--mute)}nav button.on{color:var(--ac);font-weight:700}
+label{display:block;font-size:13px;color:var(--mute);margin:8px 0 2px}
+input,select{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font-size:16px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:11px 16px;font-size:16px;width:100%;margin-top:12px}
+.btn.s{width:auto;padding:5px 10px;font-size:13px;margin:0;background:none;color:var(--mute);border:1px solid var(--line)}
+details{border-top:1px solid var(--line);padding:6px 0}summary{font-weight:600}
+.ck{display:flex;gap:8px;align-items:center;padding:3px 0}.ck input{width:auto}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%}
+svg{width:100%;height:auto}
+
+nav button{font-size:13px}
+.pg{animation:in .35s ease}@keyframes in{from{opacity:0;transform:translateY(8px)}}
+.btn,nav button,.pill,.card{transition:transform .15s,background .2s,color .2s}.btn:active,nav button:active,.pill:active{transform:scale(.95)}
+.bar i{animation:gr .8s ease both}@keyframes gr{from{width:0}}
+.ln{stroke-dasharray:1;stroke-dashoffset:1;animation:dr 1.1s ease forwards}@keyframes dr{to{stroke-dashoffset:0}}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}.pill{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:14px;padding:4px 12px;font-size:13px}.pill.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:6px 3px;border-bottom:1px solid var(--line);text-align:right}td:first-child,th:first-child{text-align:left}
+img.bk{max-width:100%;border-radius:8px;margin-top:6px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+nav button{font-size:12px}a{color:var(--ac)}</style></head><body><main id="app"></main>
+<nav id="nav"></nav>
+<script>
+let K={
+数学:{"必修第一册":["集合与常用逻辑用语","一元二次函数、方程和不等式","函数的概念与性质","指数函数与对数函数","三角函数"],"必修第二册":["平面向量及其应用","复数","立体几何初步","统计","概率"],"选择性必修第一册":["空间向量与立体几何","直线和圆的方程","圆锥曲线的方程"],"选择性必修第二册":["数列","一元函数的导数及其应用"],"选择性必修第三册":["计数原理","随机变量及其分布","成对数据的统计分析"]},
+物理:{"必修第一册":["运动的描述","匀变速直线运动的研究","相互作用——力","运动和力的关系(牛顿定律)"],"必修第二册":["抛体运动","圆周运动","万有引力与宇宙航行","机械能守恒定律"],"必修第三册":["静电场及其应用","静电场中的能量","电路及其应用","电能 能量守恒定律","电磁场与电磁波初步"],"选择性必修第一册":["动量守恒定律","机械振动","机械波","光"],"选择性必修第二册":["磁场","电磁感应","交变电流","电磁振荡与电磁波"],"选择性必修第三册":["分子动理论","气体 固体和液体","热力学定律","原子结构和波粒二象性","原子核"]},
+化学:{"必修第一册":["物质及其变化","海水中的重要元素——钠和氯","铁 金属材料","物质结构 元素周期律"],"必修第二册":["硫、氮及无机非金属材料","化学反应与能量","化学反应的速率与限度","有机化合物","化学与可持续发展"],"选择性必修1":["化学反应的热效应","化学反应速率与化学平衡","水溶液中的离子反应与平衡","电化学基础"],"选择性必修2":["原子结构与性质","分子结构与性质","晶体结构与性质"],"选择性必修3":["烃","烃的衍生物","生物大分子与合成高分子"]},
+生物:{"必修1":["走近细胞","组成细胞的分子","细胞的基本结构","细胞的物质输入和输出","细胞的能量供应和利用","细胞的生命历程"],"必修2":["遗传因子的发现","基因和染色体的关系","基因的本质","基因的表达","基因突变及其他变异","生物的进化"],"选择性必修1":["人体的内环境与稳态","神经调节","体液调节","免疫调节","植物生命活动的调节"],"选择性必修2":["种群及其动态","群落及其演替","生态系统及其稳定性","人与环境"],"选择性必修3":["发酵工程","细胞工程","基因工程","生物技术的安全性与伦理"]},
+语文:{"能力项":["现代文阅读","古诗文默写","文言文阅读","古代诗歌鉴赏","语言文字运用","写作"]},
+英语:{"能力项":["听力","词汇与语法","阅读理解","完形填空","写作"]}},
+KP={数学:{
+"集合与常用逻辑用语":"集合的含义与表示、子集与真子集★、交并补与Venn图★、充分必要条件★、全称与存在量词命题否定★",
+"一元二次函数、方程和不等式":"不等式性质与比较大小★、基本不等式求最值★、一元二次不等式解法★、含参不等式与恒成立★、二次函数与方程的根",
+"函数的概念与性质":"定义域与值域★、解析式求法、单调性★、奇偶性★、函数图象与零点、幂函数、函数模型应用",
+"指数函数与对数函数":"指数幂运算、对数运算与换底公式★、指对数函数图象性质★、比较大小★、零点与二分法、指对数模型",
+"三角函数":"弧度制与任意角、定义与诱导公式★、同角关系★、图象与性质(周期 单调 对称)★、y=Asin(ωx+φ)★、两角和差与二倍角公式★",
+"平面向量及其应用":"向量线性运算★、数量积★、坐标运算与共线垂直★、投影向量、正弦定理余弦定理★、解三角形应用★",
+"复数":"复数概念与几何意义、四则运算★、共轭与模★",
+"立体几何初步":"几何体表面积体积★、三视图与直观图、线面平行判定性质★、线面垂直★、面面平行与垂直、空间角初步",
+"统计":"抽样方法★、频率分布直方图★、百分位数、平均数方差标准差★",
+"概率":"样本空间与事件、古典概型★、互斥与对立事件、相互独立事件★、频率与概率",
+"空间向量与立体几何":"空间向量坐标运算★、线面位置关系的向量证明★、空间角★、空间距离",
+"直线和圆的方程":"直线方程与位置关系★、圆的方程★、直线与圆相交相切★、圆与圆位置关系",
+"圆锥曲线的方程":"椭圆★、双曲线★、抛物线★、直线与圆锥曲线(弦长 中点)★",
+"数列":"等差等比通项与求和★、求和方法(裂项 错位相减)★、递推求通项★、数列与不等式",
+"一元函数的导数及其应用":"导数几何意义★、单调性与极值★、最值与恒成立★、零点与不等式证明",
+"计数原理":"分类分步计数★、排列组合★、二项式定理★",
+"随机变量及其分布":"条件概率与全概率公式★、离散型随机变量分布列★、二项分布与超几何分布★、正态分布",
+"成对数据的统计分析":"相关性与回归分析★、独立性检验★"},
+物理:{
+"运动的描述":"质点与参考系、位移与路程、速度与加速度★、x-t与v-t图象★",
+"匀变速直线运动的研究":"基本公式与推论★、逐差法与实验、自由落体与竖直上抛★、追及相遇★",
+"相互作用——力":"重力 弹力 摩擦力★、胡克定律、力的合成与分解★、受力分析与共点力平衡★、动态平衡★",
+"运动和力的关系(牛顿定律)":"牛顿三定律★、整体法隔离法与连接体★、超重失重、传送带与板块模型★、瞬时问题",
+"抛体运动":"运动合成与分解★、平抛运动规律★、斜抛运动",
+"圆周运动":"线速度角速度周期、向心力与向心加速度★、水平与竖直面圆周模型★、离心现象",
+"万有引力与宇宙航行":"开普勒定律、万有引力定律★、天体质量与密度★、卫星运行与宇宙速度★、变轨与双星",
+"机械能守恒定律":"功与功率★、动能定理★、势能、机械能守恒★、功能关系与能量守恒★、验证机械能守恒实验",
+"静电场及其应用":"库仑定律★、电场强度与电场线★、电场叠加、静电平衡",
+"静电场中的能量":"电势与电势能★、电势差与电场强度关系、电容器★、带电粒子在电场中运动★",
+"电路及其应用":"电流 电阻 欧姆定律★、串并联电路、电表改装、测电阻与电阻率实验★",
+"电能 能量守恒定律":"电功与焦耳定律、闭合电路欧姆定律★、测电源电动势和内阻★",
+"电磁场与电磁波初步":"磁场与磁感线、磁通量、电磁波与能量量子化",
+"动量守恒定律":"动量定理★、动量守恒★、碰撞(弹性 非弹性)★、反冲与人船模型",
+"机械振动":"简谐运动图象★、单摆周期★、受迫振动与共振",
+"机械波":"波的图象与传播★、波速波长频率、干涉衍射★",
+"光":"折射定律与全反射★、干涉衍射、双缝干涉实验",
+"磁场":"安培力★、洛伦兹力★、带电粒子在匀强磁场中运动★、复合场与质谱仪回旋加速器",
+"电磁感应":"楞次定律★、法拉第电磁感应定律★、导体棒切割模型★、自感涡流",
+"交变电流":"交流电图象与有效值★、变压器与远距离输电★",
+"电磁振荡与电磁波":"LC振荡、电磁波谱、传感器",
+"分子动理论":"布朗运动、分子力与分子势能、内能与温度",
+"气体 固体和液体":"气体实验定律★、理想气体状态方程★、图象问题、液体表面张力",
+"热力学定律":"热力学第一定律★、热力学第二定律、气体做功与内能",
+"原子结构和波粒二象性":"光电效应方程★、能级跃迁★、波粒二象性",
+"原子核":"衰变与半衰期★、核反应方程★、结合能与质能方程"},
+化学:{
+"物质及其变化":"物质分类与胶体★、电解质与电离★、离子方程式书写★、离子共存★、氧化还原概念与电子转移★、氧化还原配平★",
+"海水中的重要元素——钠和氯":"钠及Na2O2 Na2CO3 NaHCO3★、氯气及氯水性质★、物质的量与摩尔质量★、气体摩尔体积、物质的量浓度与配制★、阿伏加德罗常数判断★",
+"铁 金属材料":"铁及其化合物转化★、Fe2+与Fe3+检验★、铝及其化合物、合金、化学方程式计算★",
+"物质结构 元素周期律":"原子结构与核外电子排布、周期表结构★、元素周期律性质递变★、离子键与共价键★、电子式★",
+"硫、氮及无机非金属材料":"SO2性质与浓硫酸★、氮氧化物与氨 硝酸★、氨气实验室制取、硅与无机非金属材料、含硫含氮物质转化★",
+"化学反应与能量":"吸热放热反应、键能与反应热★、原电池原理与电极反应★、常见化学电源",
+"化学反应的速率与限度":"速率计算与影响因素★、可逆反应与平衡状态判断★、平衡移动初步",
+"有机化合物":"甲烷与烷烃同分异构体★、乙烯与苯★、乙醇乙酸与酯化反应★、糖类 油脂 蛋白质、有机反应类型★",
+"化学与可持续发展":"金属矿物与海水资源开发、煤石油天然气综合利用、绿色化学与环保",
+"化学反应的热效应":"焓变与热化学方程式★、盖斯定律★、燃烧热与中和热测定★",
+"化学反应速率与化学平衡":"速率与影响因素★、化学平衡常数★、平衡移动勒夏特列原理★、图象与等效平衡★",
+"水溶液中的离子反应与平衡":"弱电解质电离平衡★、水的电离与pH★、盐类水解★、离子浓度比较★、沉淀溶解平衡与Ksp★、滴定★",
+"电化学基础":"原电池与电极方程式★、电解池与电解规律★、金属腐蚀与防护、离子交换膜",
+"原子结构与性质":"核外电子排布与轨道表示式★、电离能与电负性★、周期表分区",
+"分子结构与性质":"共价键与键参数、杂化轨道与空间构型★、分子极性与氢键★",
+"晶体结构与性质":"晶体类型比较★、晶胞计算★、配位化合物",
+"烃":"烷烯炔性质★、芳香烃、同分异构体与命名★",
+"烃的衍生物":"卤代烃 醇 酚★、醛 酮 羧酸 酯★、官能团转化与有机推断★",
+"生物大分子与合成高分子":"糖 蛋白质 核酸、高分子聚合反应★、合成路线设计"},
+生物:{
+"走近细胞":"细胞学说、原核与真核细胞★、显微镜使用、病毒",
+"组成细胞的分子":"水与无机盐、糖类与脂质★、蛋白质结构与相关计算★、核酸★、有机物检测实验★",
+"细胞的基本结构":"细胞膜流动镶嵌模型★、细胞器分工与协调★、细胞核、分泌蛋白合成运输★",
+"细胞的物质输入和输出":"渗透作用与质壁分离实验★、被动运输与主动运输★、胞吞胞吐",
+"细胞的能量供应和利用":"酶的特性与实验★、ATP、细胞呼吸★、光合作用过程与影响因素★、色素提取分离",
+"细胞的生命历程":"有丝分裂过程与曲线★、细胞分化与全能性、衰老 凋亡 癌变",
+"遗传因子的发现":"一对相对性状杂交实验★、分离定律计算★、自由组合定律★、9:3:3:1变式★、自交与测交概率",
+"基因和染色体的关系":"减数分裂与配子形成★、受精作用、基因在染色体上、伴性遗传与系谱图★",
+"基因的本质":"DNA是遗传物质经典实验★、DNA结构★、DNA复制★",
+"基因的表达":"转录与翻译★、中心法则★、基因表达与性状、表观遗传",
+"基因突变及其他变异":"基因突变与基因重组★、染色体变异与育种★、人类遗传病与调查",
+"生物的进化":"自然选择学说、现代生物进化理论★、基因频率计算★、协同进化与生物多样性",
+"人体的内环境与稳态":"内环境组成与理化性质★、稳态及其调节",
+"神经调节":"反射弧★、兴奋传导与传递★、神经系统分级调节",
+"体液调节":"激素调节实例(血糖 甲状腺)★、激素分泌调节与反馈★、神经与体液调节关系",
+"免疫调节":"免疫系统组成、体液免疫与细胞免疫★、免疫失调与应用",
+"植物生命活动的调节":"生长素发现与生理作用★、其他植物激素、环境因素调节",
+"种群及其动态":"种群特征与密度调查★、种群数量变化曲线★",
+"群落及其演替":"群落结构、种间关系★、群落演替",
+"生态系统及其稳定性":"生态系统结构、能量流动★、物质循环、信息传递、稳定性",
+"人与环境":"生态足迹、生物多样性保护、全球性环境问题",
+"发酵工程":"传统发酵技术、微生物培养与分离★、发酵工程应用",
+"细胞工程":"植物组织培养★、植物体细胞杂交、动物细胞培养与单克隆抗体★",
+"基因工程":"工具酶与载体、基因工程操作步骤★、PCR技术★、蛋白质工程",
+"生物技术的安全性与伦理":"转基因安全性、生殖性克隆伦理"},
+语文:{
+"现代文阅读":"论述类文本信息筛选★、文学类文本赏析★、概括与探究题、多材料对比",
+"古诗文默写":"必修篇目默写★、理解性默写★、易错字",
+"文言文阅读":"实词虚词★、断句★、翻译得分点★、文化常识、人物事件概括",
+"古代诗歌鉴赏":"意象与意境、表现手法★、情感主旨★、炼字",
+"语言文字运用":"病句辨析★、成语使用★、标点、衔接与仿写、压缩语段",
+"写作":"审题立意★、议论文结构与论证★、素材积累、语言升格"},
+英语:{
+"听力":"短对话抓关键信息★、长对话与独白★、预读选项",
+"词汇与语法":"高频词汇短语★、时态语态★、非谓语★、从句★",
+"阅读理解":"细节与推理判断★、主旨大意★、词义猜测、七选五",
+"完形填空":"上下文逻辑★、固定搭配与词义辨析★",
+"写作":"应用文(邀请 建议 申请)★、读后续写、概要写作"}};
+const SUBS=Object.keys(K),COL={数学:"#0f766e",物理:"#2563eb",化学:"#9333ea",生物:"#65a30d",语文:"#dc2626",英语:"#d97706"};
+let S;try{S=JSON.parse(localStorage.xq)}catch(e){}S=S||{exams:[]};
+const save=()=>{try{localStorage.xq=JSON.stringify(S)}catch(e){}};if(S.kb){K=S.kb.K;KP=S.kb.KP}
+const mean=a=>a.reduce((x,y)=>x+y,0)/a.length,cl=x=>Math.max(0,Math.min(1,x)),pc=x=>Math.round(x*100)+"%";
+const keys=sub=>Object.entries(K[sub]).flatMap(([v,l])=>l.map(n=>v+"|"+n));
+
+// ---- 算法 ----
+const erf=x=>{const t=1/(1+.3275911*Math.abs(x)),y=1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x);return x<0?-y:y};
+const Phi=z=>.5*(1+erf(z/Math.SQRT2));
+function probit(p){p=Math.min(.995,Math.max(.005,p));const q=p<.5?p:1-p,t=Math.sqrt(-2*Math.log(q)),z=t-(2.515517+.802853*t+.010328*t*t)/(1+1.432788*t+.189269*t*t+.001308*t*t*t);return p<.5?-z:z}
+const tw=e=>({单元测:.7,月考:1,期中:1.3,期末:1.5})[e.type]||1;
+function zs(e){ // 相对同学的位置(标准分)：排名换算为正态分数，排除试卷难度
+ const p=[];
+ if(e.gr&&e.gn>1)p.push([probit((e.gn-e.gr+.5)/e.gn),2]);
+ if(e.cr&&e.cn>1)p.push([probit((e.cn-e.cr+.5)/e.cn),e.gr?1:2]);
+ if(e.avg)p.push([Math.max(-3,Math.min(3,(e.score-e.avg)/(.15*e.full))),1]);
+ if(!p.length)p.push([(e.score/e.full-.7)/.15,.6]);
+ return p.reduce((a,x)=>a+x[0]*x[1],0)/p.reduce((a,x)=>a+x[1],0)}
+const perf=e=>Phi(zs(e));
+const list=sub=>S.exams.filter(e=>e.sub==sub).sort((a,b)=>a.date<b.date?-1:1);
+function trend(sub){
+ const L=list(sub),n=L.length;if(n<2)return{k:"数据不足",c:"mute",t:"至少录入2次考试才能判断趋势",d:0};
+ const z=L.map(zs),t=L.map(e=>new Date(e.date)/864e5),T=t[n-1],span=T-t[0]||1,ww=L.map((e,i)=>tw(e)*Math.pow(.5,(T-t[i])/45)),lvl=ww.reduce((a,x,i)=>a+x*z[i],0)/ww.reduce((a,x)=>a+x,0);
+ const k=Math.max(1,Math.floor(n/2)),ch=mean(z.slice(n-k))-mean(z.slice(0,n-k));
+ const mt=mean(t),mz=mean(z),sxx=t.reduce((a,x)=>a+(x-mt)**2,0),sl=sxx?t.reduce((a,x,i)=>a+(x-mt)*(z[i]-mz),0)/sxx:0;
+ const vol=n>=4?Math.sqrt(mean(z.slice(1).map((v,i)=>(v-z[i])**2))):0,noise=n>=4?Math.max(.3,vol/Math.SQRT2):.5;
+ const d=n>=3?.6*ch+.4*sl*span:ch,th=Math.max(.35,.9*noise),sg=Math.max(.8,2*noise);let r;
+ if(n>=4&&vol>.9)r={k:"波动大",c:"dn",t:`相邻两次考试位置平均相差${vol.toFixed(1)}个标准差，状态不稳定`};
+ else if(d<-sg)r={k:"显著下滑",c:"dn",t:"相对同学的位置明显下降，需要重点关注"};
+ else if(d<-th)r={k:"下降",c:"dn",t:"相对位置在下滑"};
+ else if(d>th)r={k:"上升",c:"up",t:"相对位置在提升"};
+ else r={k:"持平",c:"mute",t:"相对位置基本稳定，变化在正常波动范围内"};
+ r.d=d;
+ if(n>=3){const mid=.5*lvl+.5*z[n-1]+.5*sl*span/(n-1),lo=Phi(mid-1.28*noise),hi=Phi(mid+1.28*noise),g=L[n-1].gn;r.pr=`下次预计相对位置 ${pc(lo)}–${pc(hi)}（80%区间）`+(g?`，约年排 ${Math.max(1,Math.round((1-hi)*g))}–${Math.round((1-lo)*g)} 名`:"")}
+ return r}
+function inv(A){const n=A.length,M=A.map((r,i)=>[...r,...Array.from({length:n},(_,j)=>+(i==j))]);
+ for(let i=0;i<n;i++){let p=i;for(let r=i+1;r<n;r++)if(Math.abs(M[r][i])>Math.abs(M[p][i]))p=r;[M[i],M[p]]=[M[p],M[i]];const d=M[i][i];for(let c=0;c<2*n;c++)M[i][c]/=d;for(let r=0;r<n;r++)if(r!=i){const f=M[r][i];if(f)for(let c=0;c<2*n;c++)M[r][c]-=f*M[i][c]}}
+ return M.map(r=>r.slice(n))}
+function weak(sub){ // 加权岭回归(贝叶斯)：由考试范围与失分反推各章掌握度，并给出后验置信度
+ const ks=keys(sub),idx={};ks.forEach((k,i)=>idx[k]=i);const N=ks.length,L=list(sub),ex=L.filter(e=>e.scope&&e.scope.length),now=Date.now(),last={};
+ const prior=L.length?L.reduce((a,e)=>a+zs(e)*tw(e),0)/L.reduce((a,e)=>a+tw(e),0):0,LAM=.04;
+ const A=Array.from({length:N},(_,i)=>Array.from({length:N},(_,j)=>i==j?LAM:0)),b=Array(N).fill(LAM*prior);
+ const add=(row,y,w)=>{for(const i in row){for(const j in row)A[i][j]+=w*row[i]*row[j];b[i]+=w*row[i]*y}};
+ ex.forEach(e=>{const sc=e.scope.filter(k=>k in idx);if(!sc.length)return;const w=tw(e)*Math.pow(.5,(now-new Date(e.date))/864e5/120),z=zs(e),row={};
+  sc.forEach(k=>{row[idx[k]]=1/sc.length;last[k]=e.date});add(row,z,w);
+  if(e.loss)Object.entries(e.loss).forEach(([k,l])=>{if(k in idx)add({[idx[k]]:1},Math.max(-3,Math.min(3,z+((1-l/(e.full/sc.length))-e.score/e.full)/.15)),2*w)})});
+ const I=inv(A),m=I.map(r=>r.reduce((a,x,j)=>a+x*b[j],0));
+ return ks.map((k,i)=>{const days=last[k]?(now-new Date(last[k]))/864e5:null,forget=days==null?.6:1-Math.exp(-days/90),conf=cl(1-Math.sqrt(Math.max(0,I[i][i])*LAM)),mas=Phi(m[i]),star=(kpOf(sub,k).join("").match(/★/g)||[]).length;
+  return{k,name:k.split("|")[1],vol:k.split("|")[0],mas,conf,days,pri:(1-mas)*(1+forget)*(1+.12*star)}}).sort((a,b)=>b.pri-a.pri)}
+
+// ---- 界面 ----
+let tab="home",tsel="全部",asub="数学";
+const $=s=>document.querySelector(s);
+const tabs=[["home","总览"],["add","录入"],["trend","趋势"],["weak","分析"],["plan","计划"]];
+function render(){
+ $("#nav").innerHTML=tabs.map(([k,v])=>`<button class="${k==tab?"on":""}" onclick="tab='${k}';render()">${v}</button>`).join("");
+ $("#app").innerHTML='<div class="pg">'+({home,add,trend:trendPage,weak:weakPage,plan,kb})[tab]()+'</div>';
+ if(["add","plan"].includes(tab))scopeUI();
+}
+function home(){
+ let h="<h1>学情总览</h1>";const lat=[];const wk=S.exams.filter(e=>Date.now()-new Date(e.date)<7*864e5).length,ws=SUBS.filter(x=>list(x).length>1).sort((a,b)=>trend(a).d-trend(b).d)[0];h+=`<div class="card"><b>本周小结</b><div>本周录入 ${wk} 场考试。${ws?(trend(ws).d<-.35?`需要重点关注：${ws}（${trend(ws).k}）。`:"各科暂无明显下滑，继续保持。"):"录入更多考试后将给出判断。"}</div></div>`;
+ SUBS.forEach(s=>{const L=list(s),t=trend(s),e=L[L.length-1];
+  if(e)lat.push([s,zs(e)]);
+  h+=`<div class="card"><div class="row"><b>${s}</b><span class="${t.c}">${t.k}${t.d>.35?" ↑":t.d<-.35?" ↓":""}</span></div>
+  ${e?`<div class="mute">最近：${e.score}/${e.full}${e.cr?` · 班排 ${e.cr}/${e.cn}`:""}${e.gr?` · 年排 ${e.gr}/${e.gn}`:""}</div>`:`<div class="mute">还没有成绩</div>`}
+  <div>${t.t}</div>${chg(s)?`<div class="mute">最近：${chg(s).t}</div>`:""}</div>`});
+ if(lat.length>=3){const a=lat.map(x=>x[1]),mu=mean(a),sd=Math.sqrt(mean(a.map(v=>(v-mu)**2))),low=lat.sort((x,y)=>x[1]-y[1])[0];
+  h+=`<div class="card"><b>偏科情况</b><div>${sd>.8?`各科差距较大，${low[0]}明显拖后腿。`:sd>.45?`略有偏科，${low[0]}相对最弱。`:"各科比较均衡。"}</div></div>`}
+ h+="<h2>考试记录</h2>"+([...S.exams].sort((a,b)=>a.date<b.date?1:-1).map(e=>`<div class="card row"><div><b>${e.sub}</b> ${e.type} <span class="mute">${e.date}</span><div class="mute">${e.score}/${e.full}${e.gr?` · 年排 ${e.gr}/${e.gn}`:""}</div></div><button class="btn s" onclick="del(${e.id})">删除</button></div>`).join("")||`<div class="mute">在“录入”页添加第一次考试</div>`);
+ h+=`<div class="row" style="margin-top:12px"><button class="btn s" onclick="exp()">导出备份</button><button class="btn s" onclick="csv()">导出CSV</button><button class="btn s" onclick="tab='kb';render()">知识点</button><button class="btn s" onclick="$('#imp').click()">导入备份</button></div><input id="imp" type="file" accept=".json" hidden onchange="imp(this)">`;
+ return h;
+}
+function add(){
+ return `<h1>录入成绩</h1><div class="card">
+ <div class="g2"><div><label>科目</label><select id="f_sub" onchange="asub=this.value;scopeUI()">${SUBS.map(s=>`<option ${s==asub?"selected":""}>${s}</option>`).join("")}</select></div>
+ <div><label>类型</label><select id="f_type">${["月考","期中","期末","单元测"].map(s=>`<option>${s}</option>`).join("")}</select></div>
+ <div><label>得分</label><input id="f_score" type="number" inputmode="decimal"></div><div><label>满分</label><input id="f_full" type="number" value="100"></div>
+ <div><label>班级排名</label><input id="f_cr" type="number" inputmode="numeric"></div><div><label>班级人数</label><input id="f_cn" type="number" value="${S.cfg&&S.cfg.cn||""}"></div>
+ <div><label>年级排名</label><input id="f_gr" type="number" inputmode="numeric"></div><div><label>年级人数</label><input id="f_gn" type="number" value="${S.cfg&&S.cfg.gn||""}"></div>
+ <div><label>班级平均分(选填)</label><input id="f_avg" type="number"></div><div><label>日期</label><input id="f_date" type="date" value="${new Date().toISOString().slice(0,10)}"></div></div>
+ <label>考试范围(勾选章节；可在右侧填该章节的失分，更准)</label><div id="scope"></div>
+ <button class="btn" onclick="submitExam()">保存</button></div>`;
+}
+function scopeUI(){
+ $("#scope").innerHTML=Object.entries(K[asub]).map(([v,l])=>`<details><summary>${v}</summary><button class="btn s" onclick="document.querySelectorAll('[data-v=\\'${v}\\']').forEach(c=>c.checked=true)">全选</button>
+ ${l.map(n=>`<label class="ck"><input type="checkbox" data-v="${v}" value="${v}|${n}" ${tab=="plan"&&S.next&&S.next.sub==asub&&S.next.scope.includes(v+"|"+n)?"checked":""}>${n}${tab=="add"?`<input class="ls" data-k="${v}|${n}" type="number" placeholder="失分" style="width:64px;margin-left:auto">`:""}</label>`).join("")}</details>`).join("");
+}
+function submitExam(){
+ const g=id=>$("#f_"+id).value,n=id=>g(id)===""?null:+g(id);
+ if(n("score")==null||!n("full"))return alert("请填写得分和满分");
+ if(n("score")>n("full"))return alert("得分不能大于满分");
+ S.exams.push({id:Date.now(),sub:g("sub"),type:g("type"),date:g("date"),score:n("score"),full:n("full"),cr:n("cr"),cn:n("cn"),gr:n("gr"),gn:n("gn"),avg:n("avg"),...(()=>{const loss={};document.querySelectorAll("#scope .ls").forEach(i=>{if(i.value!=="")loss[i.dataset.k]=+i.value});const sc=new Set([...document.querySelectorAll("#scope input:checked")].map(c=>c.value));Object.keys(loss).forEach(k=>sc.add(k));return{scope:[...sc],loss}})()});
+ S.cfg={cn:n("cn")||(S.cfg||{}).cn,gn:n("gn")||(S.cfg||{}).gn};save();tab="home";render();
+}
+function del(id){if(confirm("删除这条记录？")){S.exams=S.exams.filter(e=>e.id!=id);save();render()}}
+function exp(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"}));a.download="学情备份.json";a.click()}
+function imp(el){const r=new FileReader();r.onload=()=>{try{S=JSON.parse(r.result);save();render()}catch(e){alert("文件无法读取")}};r.readAsText(el.files[0])}
+
+let tmet="perf";
+const MET={perf:"综合表现",rate:"得分率",gr:"年级排名",cr:"班级排名"};
+const val=(e,m)=>m=="perf"?perf(e):m=="rate"?e.score/e.full:e[m]||null;
+function chg(s){const L=list(s),n=L.length;if(n<2)return null;const a=L[n-2],b=L[n-1],rk=a.gr&&b.gr?"gr":a.cr&&b.cr?"cr":null,dp=zs(b)-zs(a),ds=b.score/b.full-a.score/a.full,dr=rk?a[rk]-b[rk]:0;
+ const t=`得分 ${a.score}→${b.score}`+(rk?`，${rk=="gr"?"年排":"班排"} ${a[rk]}→${b[rk]}（${dr>0?"进步"+dr:dr<0?"退步"+-dr:"持平"}名）`:"");
+ const w=ds<-.03&&dp>.2?"分数下降但相对位置上升，更像试卷偏难，不算退步。":ds>.03&&dp<-.2?"分数上升但相对位置下降，说明同学进步更快。":dp>.3?"整体向好。":dp<-.3?"整体走弱，建议查看“分析”页找原因。":"变化不大。";
+ return{t,w,dp}}
+function chart(subs,m){
+ const inv=m=="gr"||m=="cr",pts={},all=[];
+ subs.forEach(s=>{pts[s]=list(s).map(e=>({d:e.date,v:val(e,m)})).filter(p=>p.v!=null);pts[s].forEach(p=>all.push(p.v))});
+ const dates=[...new Set(subs.flatMap(s=>pts[s].map(p=>p.d)))].sort();
+ if(!dates.length)return'<div class="mute">这个指标还没有数据</div>';
+ let lo=Math.min(...all),hi=Math.max(...all);
+ if(inv){lo=1;hi=Math.max(hi*1.1,lo+4)}else{lo=Math.max(0,lo-.08);hi=Math.min(1,hi+.08);if(hi-lo<.2)hi=Math.min(1,lo+.2)}
+ const W=340,H=220,px=i=>40+(dates.length>1?i*(W-56)/(dates.length-1):(W-56)/2),py=v=>12+(inv?(v-lo)/(hi-lo):1-(v-lo)/(hi-lo))*(H-44),fm=v=>inv?Math.round(v):pc(v),st=Math.ceil(dates.length/6);
+ let sv=`<svg viewBox="0 0 ${W} ${H}">`;
+ for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4;sv+=`<line x1="40" x2="${W-12}" y1="${py(v)}" y2="${py(v)}" stroke="var(--line)"/><text x="36" y="${py(v)+4}" font-size="10" text-anchor="end" fill="var(--mute)">${fm(v)}</text>`}
+ dates.forEach((d,i)=>{if(i%st==0)sv+=`<text x="${px(i)}" y="${H-8}" font-size="10" text-anchor="middle" fill="var(--mute)">${d.slice(5)}</text>`});
+ subs.forEach(s=>{const p=pts[s].map(q=>[px(dates.indexOf(q.d)),py(q.v)]);if(!p.length)return;
+  sv+=`<polyline class="ln" pathLength="1" fill="none" stroke="${COL[s]}" stroke-width="2.5" stroke-linejoin="round" points="${p.map(x=>x.join(",")).join(" ")}"/>`+p.map((x,i)=>`<circle cx="${x[0]}" cy="${x[1]}" r="3.5" fill="${COL[s]}"/>`+(subs.length==1?`<text x="${x[0]}" y="${x[1]-8}" font-size="10" text-anchor="middle" fill="var(--ink)">${fm(pts[s][i].v)}</text>`:"")).join("")});
+ return sv+"</svg>"}
+function trendPage(){
+ const one=tsel!="全部",subs=one?[tsel]:SUBS.filter(s=>list(s).length);
+ let h=`<h1>趋势</h1><div class="card"><div class="chips">`+["全部",...SUBS].map(s=>`<button class="pill ${s==tsel?"on":""}" onclick="tsel='${s}';render()">${s}</button>`).join("")+`</div><div class="chips">`+Object.entries(MET).map(([k,v])=>`<button class="pill ${k==tmet?"on":""}" onclick="tmet='${k}';render()">${v}</button>`).join("")+`</div>${chart(subs,tmet)}`;
+ if(!one)h+=`<div>`+subs.map(s=>`<span style="color:${COL[s]}">● ${s}</span> `).join("")+`</div>`;
+ h+=`<div class="mute">${tmet=="perf"?"综合表现：把年排、班排、班均分换算成相对同学的位置(百分位)，越高越好；没填排名和班均分时只能按得分率估算，无法排除试卷难度":tmet.length==2?"排名图：越靠上名次越好":"原始得分率，受试卷难度影响"}</div></div>`;
+ if(one){const L=list(tsel),t=trend(tsel),c=chg(tsel),y=L.map(perf);
+  h+=`<div class="card"><div class="row"><b>${tsel}：<span class="${t.c}">${t.k}</span></b><span class="mute">共${L.length}次</span></div><div>${t.t}</div>${t.pr?`<div class="mute">${t.pr}</div>`:""}${c?`<div style="margin-top:6px">最近一次：${c.t}</div><div class="${c.dp>.3?"up":c.dp<-.3?"dn":"mute"}">${c.w}</div>`:""}${y.length?`<div class="mute" style="margin-top:6px">最佳 ${pc(Math.max(...y))} · 最差 ${pc(Math.min(...y))} · 平均 ${pc(mean(y))}</div>`:""}</div>
+  <div class="card"><table><tr><th>日期</th><th>类型</th><th>得分</th><th>班排</th><th>年排</th><th>表现</th></tr>${[...L].reverse().map(e=>`<tr><td>${e.date.slice(5)}</td><td>${e.type}</td><td>${e.score}/${e.full}</td><td>${e.cr||"-"}</td><td>${e.gr||"-"}</td><td>${pc(perf(e))}</td></tr>`).join("")}</table></div>`}
+ else h+=subs.sort((a,b)=>trend(a).d-trend(b).d).map(s=>{const t=trend(s),c=chg(s);return`<div class="card" onclick="tsel='${s}';render()"><div class="row"><b style="color:${COL[s]}">${s}</b><span class="${t.c}">${t.k}</span></div>${c?`<div>${c.t}</div><div class="mute">${c.w}</div>`:`<div class="mute">${t.t}</div>`}</div>`}).join("");
+ return h}
+function radar(){const v=SUBS.map(s=>{const L=list(s);return L.length?perf(L[L.length-1]):0}),R=82,c=120,pt=(i,r)=>[c+Math.sin(i*Math.PI/3)*R*r,c-Math.cos(i*Math.PI/3)*R*r];
+ let sv=`<svg viewBox="0 0 240 240">`;[.25,.5,.75,1].forEach(r=>sv+=`<polygon fill="none" stroke="var(--line)" points="${SUBS.map((_,i)=>pt(i,r)).join(" ")}"/>`);
+ sv+=`<polygon fill="var(--ac)" fill-opacity=".25" stroke="var(--ac)" stroke-width="2" points="${v.map((x,i)=>pt(i,x)).join(" ")}"/>`;
+ SUBS.forEach((s,i)=>{const p=pt(i,1.25);sv+=`<text x="${p[0]}" y="${p[1]+4}" font-size="11" text-anchor="middle" fill="var(--ink)">${s} ${pc(v[i])}</text>`});return sv+"</svg>"}
+function weakPage(){
+ let h=`<h1>分析</h1><div class="card"><b>各科均衡度</b>${radar()}<div class="mute">取各科最近一次的综合表现</div></div><div class="card"><div class="chips">${SUBS.map(s=>`<button class="pill ${s==asub?"on":""}" onclick="asub='${s}';render()">${s}</button>`).join("")}</div>`;
+ const n=list(asub).filter(e=>e.scope&&e.scope.length).length;
+ if(n<2)return h+`<div class="mute">${asub}至少需要2次带“考试范围”且范围有重叠的记录，才能推断薄弱章节。当前 ${n} 次。</div></div>`;
+ const W=weak(asub);
+ h+=`<b>最该先复习</b>${W.slice(0,5).map((w,i)=>`<div>${i+1}. ${w.name}<span class="mute"> ${w.vol} · 掌握约${pc(w.mas)}${w.days==null?"，从未考过":"，"+Math.round(w.days)+"天前考过"}</span></div>`).join("")}<div class="mute" style="margin-top:6px">掌握度≈该章相对同学的百分位，由多次考试范围的重叠和失分反推；置信度低说明这章总是和别的章一起出现，无法单独区分，请当参考。</div></div>`;
+ [["薄弱",w=>w.mas<.45,"var(--dn)"],["一般",w=>w.mas>=.45&&w.mas<.65,"#ca8a04"],["较好",w=>w.mas>=.65,"var(--up)"]].forEach(([nm,f,c])=>{const a=W.filter(f);if(!a.length)return;
+  h+=`<h2 style="color:${c}">${nm}（${a.length}章）</h2>`+a.map(w=>`<div class="card"><div class="row"><span>${w.name}</span><span class="mute">${pc(w.mas)} · 置信度${w.conf<.2?"无":w.conf<.45?"低":w.conf<.6?"中":"高"}</span></div><div class="bar"><i style="width:${w.mas*100}%;background:${c}"></i></div></div>`).join("")});
+ return h}
+function plan(){
+ S.goal=S.goal||{};
+ let h=`<h1>计划</h1><div class="card"><b>目标分</b>`+SUBS.map(s=>{const L=list(s),e=L[L.length-1],g=S.goal[s],gap=e&&g?g-e.score:null;
+  return`<div class="row" style="margin-top:8px"><span>${s}</span><span><input style="width:84px" type="number" value="${g||""}" placeholder="目标分" onchange="S.goal['${s}']=+this.value;save();render()"> <span class="${gap>0?"dn":"up"}">${gap==null?"":gap>0?"差"+gap+"分":"已达成"}</span></span></div>`+(gap>0&&L.length>1?`<div class="mute">优先补：${weak(s).slice(0,2).map(w=>w.name).join("、")}</div>`:"")}).join("")+`</div>
+ <div class="card"><b>下次考试</b><div class="g2"><div><label>科目</label><select onchange="asub=this.value;scopeUI()">${SUBS.map(s=>`<option ${s==asub?"selected":""}>${s}</option>`).join("")}</select></div><div><label>日期</label><input id="n_date" type="date" value="${S.next?S.next.date:""}"></div></div><label>范围</label><div id="scope"></div><button class="btn" onclick="saveNext()">生成复习计划</button></div>`;
+ const nx=S.next;if(!nx)return h;
+ const days=Math.ceil((new Date(nx.date)-Date.now())/864e5);
+ if(days<0)return h+`<div class="card mute">上次设置的考试日期已过，请重新设置。</div>`;
+ const D=Math.max(1,days-1),W=weak(nx.sub).filter(w=>nx.scope.includes(w.k)),tw=W.reduce((a,w)=>a+w.pri,0)||1;let d=1;
+ h+=`<div class="card"><div class="row"><b>${nx.sub} 考试倒计时</b><b class="${days<4?"dn":""}">${days} 天</b></div>`+W.map(w=>{const k=Math.max(1,Math.round(D*w.pri/tw)),r=`第${d}${k>1?"-"+(d+k-1):""}天`;d+=k;return`<div style="margin-top:12px"><div class="row"><b>${w.name}</b><span class="mute">${r}</span></div>${kpHtml(nx.sub,w.k)}</div>`}).join("")+`<div class="row" style="margin-top:6px"><span class="mute">考前一天</span><span>整卷回顾 + 错题</span></div>${d-1>D?`<div class="dn">时间偏紧，先完成前面的章节。</div>`:""}<div class="mute">越薄弱、越久没考的章节分到的天数越多。</div></div>`;
+ return h}
+function saveNext(){const d=$("#n_date").value;if(!d)return alert("请选择考试日期");S.next={sub:asub,date:d,scope:[...document.querySelectorAll("#scope input:checked")].map(c=>c.value)};save();render()}
+const kpOf=(sub,key)=>((KP[sub]||{})[key.split("|")[1]]||"").split("、").filter(Boolean);
+function kpHtml(sub,key){return`<div class="chips" style="margin:6px 0 0">`+kpOf(sub,key).map(t=>`<span class="pill">${t}</span>`).join("")+`</div>`}
+function kbSave(){S.kb={K,KP};save()}
+function kb(){let h=`<h1>知识点</h1><div class="card"><div class="chips">${SUBS.map(s=>`<button class="pill ${s==asub?"on":""}" onclick="asub='${s}';render()">${s}</button>`).join("")}</div><div class="mute">考点用“、”分隔，★表示高频。学校进度不同可以增删改。内置考点依据课程标准与人教版教材整理，请对照学校进度核对。</div></div>`;
+ Object.entries(K[asub]).forEach(([v,l])=>{h+=`<h2>${v}</h2>`+l.map(n=>`<div class="card"><div class="row"><b>${n}</b><button class="btn s" onclick="kbDel('${v}','${n}')">删除</button></div><input value="${((KP[asub]||{})[n]||"").replace(/"/g,"&quot;")}" onchange="(KP[asub]=KP[asub]||{})['${n}']=this.value;kbSave()"></div>`).join("")});
+ return h+`<div class="card"><b>新增章节</b><input id="k_vol" placeholder="册，如 必修第一册"><input id="k_name" placeholder="章名" style="margin-top:6px"><button class="btn" onclick="kbAdd()">添加</button></div><button class="btn s" onclick="if(confirm('恢复内置知识点？')){delete S.kb;save();location.reload()}">恢复默认</button>`}
+function kbAdd(){const v=$("#k_vol").value.trim(),n=$("#k_name").value.trim();if(!v||!n)return alert("请填写册和章名");(K[asub][v]=K[asub][v]||[]).push(n);kbSave();render()}
+function kbDel(v,n){if(confirm("删除章节？已有成绩记录不受影响")){K[asub][v]=K[asub][v].filter(x=>x!=n);if(!K[asub][v].length)delete K[asub][v];kbSave();render()}}
+function csv(){const r=[["科目","日期","类型","得分","满分","班排","班级人数","年排","年级人数","班均分"],...S.exams.map(e=>[e.sub,e.date,e.type,e.score,e.full,e.cr,e.cn,e.gr,e.gn,e.avg].map(x=>x??""))];const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+r.map(x=>x.join(",")).join("\n")],{type:"text/csv"}));a.download="成绩.csv";a.click()}
+render();
+if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js");
+</script></body></html>
